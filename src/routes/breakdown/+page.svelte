@@ -178,15 +178,15 @@
             <tbody>
               <tr>
                 <th>回数</th>
-                <td>{e.count}回</td>
+                <td class="nowrap">{e.count}回</td>
               </tr>
               <tr>
                 <th>日数等</th>
-                <td>{e.dayCount}日</td>
+                <td class="nowrap">{e.dayCount}日</td>
               </tr>
               <tr>
                 <th>総時間数</th>
-                <td>{e.totalDuration}時間</td>
+                <td class="nowrap">{e.totalDuration}時間</td>
               </tr>
               <tr>
                 <th>出発地</th>
@@ -194,7 +194,7 @@
               </tr>
               <tr>
                 <th>到着地</th>
-                <td>{e.arriveAt}</td>
+                <td class="nowrap">{e.arriveAt}</td>
               </tr>
             </tbody>
           </table>
@@ -204,15 +204,15 @@
             <tbody>
               <tr>
                 <th>日当</th>
-                <td>{e.wage}円</td>
+                <td class="nowrap">{e.wage}円</td>
               </tr>
               <tr>
                 <th>宿泊料</th>
-                <td>{e.accomodationFee}円</td>
+                <td class="nowrap">{e.accomodationFee}円</td>
               </tr>
               <tr>
                 <th>合計</th>
-                <td>{e.wage + e.accomodationFee}円</td>
+                <td class="nowrap">{e.wage + e.accomodationFee}円</td>
               </tr>
             </tbody>
           </table>
@@ -280,7 +280,7 @@
             <tbody>
               <tr>
                 <th>執行額</th>
-                <td>{e.paidAmount}円</td>
+                <td class="nowrap">{e.paidAmount}円</td>
               </tr>
             </tbody>
           </table>
@@ -326,6 +326,11 @@
   }
 
   th {
+    text-wrap: nowrap;
+    vertical-align: top;
+  }
+
+  td.nowrap {
     text-wrap: nowrap;
   }
 
