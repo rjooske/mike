@@ -1,40 +1,23 @@
 <script lang="ts">
-  import { parse, type Instructor } from "$lib/input";
-  import * as exceljs from "exceljs";
-
-  const { Workbook } = exceljs;
-
-  function assert(b: boolean): asserts b {
-    if (!b) {
-      throw new Error("assertion failed");
-    }
-  }
-
-  function unreachable(_: never): never {
-    throw new Error("should be unreachable");
-  }
+  import { browser } from "$app/environment";
+  import {
+    defaultExternalInfo,
+    deserializeMikeData,
+    MIKE_DATA_KEY,
+    serializeMikeData,
+    type Destination,
+    type Entry,
+    type Instructor,
+    type MikeData,
+  } from "$lib/mike";
+  import { unreachable, assert } from "$lib/util";
+  import Editor from "./Editor.svelte";
+  import FileInput from "./FileInput.svelte";
+  import MikeDialog from "./MikeDialog.svelte";
+  import "./global.scss";
 
   const TSUKUBA_STATION_ID = "ChIJNy1V02IMImARvSkyNbzdhzQ";
   const DAISAN_AREA_MAE_ID = "ChIJ-3Acq_8LImARmQg8O3hNzsM";
-
-  type Destination = "tsukuba-station" | "daisan-area-mae";
-
-  type Route = {
-    from: string;
-    to: Destination | undefined;
-  };
-
-  type EntryUrls = {
-    toTsukubaStation: string;
-    toDaisanAreaMae: string;
-  };
-
-  type Entry = {
-    instructor: Instructor;
-    fromHome: EntryUrls;
-    fromOffice: EntryUrls;
-    route: Route | undefined;
-  };
 
   function createGoogleMapsUrl(
     origin: string,
@@ -63,239 +46,107 @@
     );
   }
 
-  function instructorsToRows(instructors: Instructor[]): Entry[] {
-    return instructors.map((instructor) => ({
-      instructor,
+  function instructorsToEntries(is: Instructor[]): Entry[] {
+    return is.map((i) => ({
+      instructor: i,
       fromHome: {
-        toTsukubaStation: createGoogleMapsUrl(
-          instructor.homeAddress,
-          "tsukuba-station",
-        ),
-        toDaisanAreaMae: createGoogleMapsUrl(
-          instructor.homeAddress,
-          "daisan-area-mae",
-        ),
+        toTsukubaStation: createGoogleMapsUrl(i.homeAddress, "tsukuba-station"),
+        toDaisanAreaMae: createGoogleMapsUrl(i.homeAddress, "daisan-area-mae"),
       },
       fromOffice: {
         toTsukubaStation: createGoogleMapsUrl(
-          instructor.officeAddress,
+          i.officeAddress,
           "tsukuba-station",
         ),
         toDaisanAreaMae: createGoogleMapsUrl(
-          instructor.officeAddress,
+          i.officeAddress,
           "daisan-area-mae",
         ),
       },
-      route: undefined,
+      externalInfo: defaultExternalInfo(),
     }));
   }
 
-  let fileInput = $state<HTMLInputElement | undefined>();
+  function randomElement<T>(ts: T[]): T {
+    assert(ts.length !== 0);
+    return ts[Math.floor(ts.length * Math.random())];
+  }
 
-  let entries = $state<Entry[] | undefined>();
+  let mikeData = $state<MikeData | undefined>(initialMikeData());
+  let mikeText = $state(
+    browser
+      ? randomElement(["猫の手も借りたいのかにゃ", "手伝ってほしいのかにゃ"])
+      : "",
+  );
 
-  async function handleLoad() {
-    if (fileInput === undefined) {
+  $effect(() => {
+    if (mikeData === undefined) {
       return;
     }
-    assert(fileInput.files !== null);
-    const file = fileInput.files[0];
-    if (file === undefined) {
-      return;
+    localStorage.setItem(MIKE_DATA_KEY, serializeMikeData(mikeData));
+  });
+
+  function initialMikeData(): MikeData | undefined {
+    if (!browser) {
+      return undefined;
     }
-
-    const w = new Workbook();
-    await w.xlsx.load(await file.arrayBuffer());
-    const instructors = parse(w);
-
-    entries = instructorsToRows(instructors);
+    const item = localStorage.getItem(MIKE_DATA_KEY);
+    if (item === null) {
+      return undefined;
+    }
+    return deserializeMikeData(item);
   }
 
-  function handleAreaSelectChange(entry: Entry, value: string) {
-    switch (value) {
-      case "":
-      case "far":
-        entry.route = undefined;
-        break;
-      case "near":
-        entry.route = { from: "", to: undefined };
-        break;
-      default:
-        throw new Error(`unknown area: ${value}`);
-    }
+  async function handleFileLoad(filename: string, is: Instructor[]) {
+    mikeData = {
+      filename,
+      title: "", // TODO
+      wage: 0, // TODO
+      entries: instructorsToEntries(is),
+    };
+
+    mikeText = "";
+    setTimeout(() => {
+      mikeText = randomElement(["世話の焼ける人間だにゃ"]);
+    }, 500);
   }
 
-  function handleDestinationSelectChange(route: Route, value: string) {
-    switch (value) {
-      case "":
-        route.to = undefined;
-        break;
-      case "tsukuba-station":
-      case "daisan-area-mae":
-        route.to = value;
-        break;
-      default:
-        throw new Error(`unknown destination: "${value}"`);
-    }
+  function handleFileError() {
+    mikeText = "";
+    setTimeout(() => {
+      mikeText = randomElement(["しっかりするにゃ"]);
+    }, 500);
   }
 
-  $inspect(entries);
+  function handleFileReset() {
+    mikeData = undefined;
+    mikeText = "";
+    setTimeout(() => {
+      mikeText = "ファイルを変えるのかにゃ";
+    }, 500);
+  }
+
+  function handleBreakdown() {
+    const a = document.createElement("a");
+    a.href = "./breakdown";
+    a.target = "_blank";
+    a.click();
+    a.remove();
+  }
 </script>
 
-<input type="file" bind:this={fileInput} />
-<button class="load" onclick={handleLoad}>ファイルを読み込む</button>
+<MikeDialog text={mikeText} />
 
-{#if entries !== undefined}
-  <table>
-    <thead>
-      <tr>
-        <th>講師</th>
-        <th>経路</th>
-        <th>入力</th>
-      </tr>
-    </thead>
-    <tbody>
-      {#each entries as entry, i}
-        <tr>
-          <td>
-            <table class="instructor">
-              <tbody>
-                <tr>
-                  <th>氏名</th>
-                  <td>
-                    <ruby>
-                      {entry.instructor.name}
-                      <rt>{entry.instructor.namePronunciation}</rt>
-                    </ruby>
-                  </td>
-                </tr>
-                <tr>
-                  <th>自宅住所</th>
-                  <td>{entry.instructor.homeAddress}</td>
-                </tr>
-                <tr>
-                  <th>勤務先住所</th>
-                  <td>{entry.instructor.officeAddress}</td>
-                </tr>
-              </tbody>
-            </table>
-          </td>
-          <td>
-            <a href={entry.fromHome.toTsukubaStation} target="_blank">
-              自宅→つくば駅
-            </a>
-            <br />
-            <a href={entry.fromHome.toDaisanAreaMae} target="_blank">
-              自宅→第三エリア前
-            </a>
-            <br />
-            <a href={entry.fromOffice.toTsukubaStation} target="_blank">
-              勤務先→つくば駅
-            </a>
-            <br />
-            <a href={entry.fromOffice.toDaisanAreaMae} target="_blank">
-              勤務先→第三エリア前
-            </a>
-          </td>
-          <td>
-            <table
-              class="input"
-              class:near-selected={entry.route !== undefined}
-            >
-              <tbody>
-                <tr>
-                  <th><label for={`area-${i}`}>地域</label></th>
-                  <td>
-                    <select
-                      id={`area-${i}`}
-                      onchange={(e) =>
-                        handleAreaSelectChange(entry, e.currentTarget.value)}
-                    >
-                      <option value="">（未選択）</option>
-                      <option value="near">近郊</option>
-                      <option value="far">その他</option>
-                    </select>
-                  </td>
-                </tr>
-                <tr>
-                  <th><label for={`nearest-station-${i}`}>最寄り駅</label></th>
-                  <td>
-                    <input
-                      id={`nearest-station-${i}`}
-                      type="text"
-                      onchange={(e) => {
-                        if (entry.route !== undefined) {
-                          entry.route.from = e.currentTarget.value;
-                        }
-                      }}
-                    />
-                  </td>
-                </tr>
-                <tr>
-                  <th><label for={`destination-${i}`}>目的地</label></th>
-                  <td>
-                    <select
-                      id={`destination-${i}`}
-                      onchange={(e) => {
-                        assert(entry.route !== undefined);
-                        handleDestinationSelectChange(
-                          entry.route,
-                          e.currentTarget.value,
-                        );
-                      }}
-                    >
-                      <option value="">（未選択）</option>
-                      <option value="tsukuba-station">つくば駅</option>
-                      <option value="daisan-area-mae">第三エリア前</option>
-                    </select>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </td>
-        </tr>
-      {/each}
-    </tbody>
-  </table>
+<div style="margin-bottom: 3em;">
+  <FileInput
+    id="file-input"
+    filename={mikeData?.filename}
+    onLoad={handleFileLoad}
+    onError={handleFileError}
+    onReset={handleFileReset}
+  />
+</div>
+
+{#if mikeData !== undefined}
+  <Editor bind:data={mikeData} onBreakdown={handleBreakdown} />
 {/if}
-
-<style lang="scss">
-  table,
-  th,
-  td {
-    border: 1px solid black;
-    border-collapse: collapse;
-  }
-
-  th {
-    padding: 0.2em 0.4em;
-  }
-
-  td {
-    padding: 0.5em 0.8em;
-  }
-
-  table.instructor,
-  table.input {
-    &,
-    & th,
-    & td {
-      border: initial;
-      border-collapse: initial;
-    }
-
-    & th,
-    & td {
-      padding: initial;
-    }
-
-    & th {
-      text-align: right;
-      padding-right: 1em;
-    }
-  }
-
-  table.input:not(.near-selected) tr:not(:first-child) {
-    visibility: hidden;
-  }
-</style>
