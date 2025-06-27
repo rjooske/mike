@@ -155,6 +155,7 @@ function areEntries(x: unknown): x is Entry[] {
 
 export type MikeData = {
   filename: string;
+  sheetName: string;
   title: string;
   wage: number;
   entries: Entry[];
@@ -166,6 +167,8 @@ function isMikeData(x: unknown): x is MikeData {
     x !== null &&
     "filename" in x &&
     typeof x.filename === "string" &&
+    "sheetName" in x &&
+    typeof x.sheetName === "string" &&
     "title" in x &&
     typeof x.title === "string" &&
     "wage" in x &&

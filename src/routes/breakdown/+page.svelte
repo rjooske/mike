@@ -110,6 +110,7 @@
 
   const mikeData = loadMikeData() ?? {
     filename: "",
+    sheetName: "",
     title: "",
     wage: 0,
     entries: [],
@@ -125,170 +126,178 @@
 <div class="department">情報科学類</div>
 
 <h2 class="table-title">近郊地域に該当する教員</h2>
-<table class="outermost">
-  <thead>
-    <tr>
-      <th colspan="2">講師</th>
-      <th>金額</th>
-    </tr>
-  </thead>
-  <tbody>
-    {#each breakdown.nearEntries as e}
-      <tr class="merge-col-1-2">
-        <td>
-          <table class="inner">
-            <tbody>
-              <tr>
-                <th>氏名</th>
-                <td>
-                  <ruby>
-                    {e.instructorName}
-                    <rt>{e.instructorNamePronunciation}</rt>
-                  </ruby>
-                </td>
-              </tr>
-              <tr>
-                <th>自宅住所</th>
-                <td>{e.homeAddress}</td>
-              </tr>
-              <tr>
-                <th>現職名</th>
-                <td>{e.jobName}</td>
-              </tr>
-              <tr>
-                <th>勤務先住所</th>
-                <td>{e.officeAddress}</td>
-              </tr>
-              <tr>
-                <th>担当授業</th>
-                <td>
-                  {e.courseId}
-                  {e.courseName}
-                </td>
-              </tr>
-              <tr>
-                <th>実施学期</th>
-                <td>{e.courseTerm}</td>
-              </tr>
-            </tbody>
-          </table>
-        </td>
-        <td>
-          <table class="inner">
-            <tbody>
-              <tr>
-                <th>回数</th>
-                <td class="nowrap">{e.count}回</td>
-              </tr>
-              <tr>
-                <th>日数等</th>
-                <td class="nowrap">{e.dayCount}日</td>
-              </tr>
-              <tr>
-                <th>総時間数</th>
-                <td class="nowrap">{e.totalDuration}時間</td>
-              </tr>
-              <tr>
-                <th>出発地</th>
-                <td>{e.departFrom}</td>
-              </tr>
-              <tr>
-                <th>到着地</th>
-                <td class="nowrap">{e.arriveAt}</td>
-              </tr>
-            </tbody>
-          </table>
-        </td>
-        <td>
-          <table class="inner">
-            <tbody>
-              <tr>
-                <th>日当</th>
-                <td class="nowrap">{e.wage}円</td>
-              </tr>
-              <tr>
-                <th>宿泊料</th>
-                <td class="nowrap">{e.accomodationFee}円</td>
-              </tr>
-              <tr>
-                <th>合計</th>
-                <td class="nowrap">{e.wage + e.accomodationFee}円</td>
-              </tr>
-            </tbody>
-          </table>
-        </td>
+{#if breakdown.nearEntries.length > 0}
+  <table class="outermost">
+    <thead>
+      <tr>
+        <th colspan="2">講師</th>
+        <th>金額</th>
       </tr>
-    {/each}
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      {#each breakdown.nearEntries as e}
+        <tr class="merge-col-1-2">
+          <td>
+            <table class="inner">
+              <tbody>
+                <tr>
+                  <th>氏名</th>
+                  <td>
+                    <ruby>
+                      {e.instructorName}
+                      <rt>{e.instructorNamePronunciation}</rt>
+                    </ruby>
+                  </td>
+                </tr>
+                <tr>
+                  <th>自宅住所</th>
+                  <td>{e.homeAddress}</td>
+                </tr>
+                <tr>
+                  <th>現職名</th>
+                  <td>{e.jobName}</td>
+                </tr>
+                <tr>
+                  <th>勤務先住所</th>
+                  <td>{e.officeAddress}</td>
+                </tr>
+                <tr>
+                  <th>担当授業</th>
+                  <td>
+                    {e.courseId}
+                    {e.courseName}
+                  </td>
+                </tr>
+                <tr>
+                  <th>実施学期</th>
+                  <td>{e.courseTerm}</td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+          <td>
+            <table class="inner">
+              <tbody>
+                <tr>
+                  <th>回数</th>
+                  <td class="nowrap">{e.count}回</td>
+                </tr>
+                <tr>
+                  <th>日数等</th>
+                  <td class="nowrap">{e.dayCount}日</td>
+                </tr>
+                <tr>
+                  <th>総時間数</th>
+                  <td class="nowrap">{e.totalDuration}時間</td>
+                </tr>
+                <tr>
+                  <th>出発地</th>
+                  <td>{e.departFrom}</td>
+                </tr>
+                <tr>
+                  <th>到着地</th>
+                  <td class="nowrap">{e.arriveAt}</td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+          <td>
+            <table class="inner">
+              <tbody>
+                <tr>
+                  <th>日当</th>
+                  <td class="nowrap">{e.wage}円</td>
+                </tr>
+                <tr>
+                  <th>宿泊料</th>
+                  <td class="nowrap">{e.accomodationFee}円</td>
+                </tr>
+                <tr>
+                  <th>合計</th>
+                  <td class="nowrap">{e.wage + e.accomodationFee}円</td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      {/each}
+    </tbody>
+  </table>
+{:else}
+  <p class="na">（該当なし）</p>
+{/if}
 <div class="total">
   <span>合計</span>
   <span>{breakdown.grandTotal}円</span>
 </div>
 
 <h2 class="table-title">支払い済みの教員</h2>
-<table class="outermost">
-  <thead>
-    <tr>
-      <th>講師</th>
-      <th>金額</th>
-    </tr>
-  </thead>
-  <tbody>
-    {#each breakdown.paidEntries as e}
+{#if breakdown.paidEntries.length > 0}
+  <table class="outermost">
+    <thead>
       <tr>
-        <td>
-          <table class="inner">
-            <tbody>
-              <tr>
-                <th>氏名</th>
-                <td>
-                  <ruby>
-                    {e.instructorName}
-                    <rt>{e.instructorNamePronunciation}</rt>
-                  </ruby>
-                </td>
-              </tr>
-              <tr>
-                <th>自宅住所</th>
-                <td>{e.homeAddress}</td>
-              </tr>
-              <tr>
-                <th>現職名</th>
-                <td>{e.jobName}</td>
-              </tr>
-              <tr>
-                <th>勤務先住所</th>
-                <td>{e.officeAddress}</td>
-              </tr>
-              <tr>
-                <th>担当授業</th>
-                <td>
-                  {e.courseId}
-                  {e.courseName}
-                </td>
-              </tr>
-              <tr>
-                <th>実施学期</th>
-                <td>{e.courseTerm}</td>
-              </tr>
-            </tbody>
-          </table>
-        </td>
-        <td>
-          <table class="inner">
-            <tbody>
-              <tr>
-                <th>執行額</th>
-                <td class="nowrap">{e.paidAmount}円</td>
-              </tr>
-            </tbody>
-          </table>
-        </td>
+        <th>講師</th>
+        <th>金額</th>
       </tr>
-    {/each}
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      {#each breakdown.paidEntries as e}
+        <tr>
+          <td>
+            <table class="inner">
+              <tbody>
+                <tr>
+                  <th>氏名</th>
+                  <td>
+                    <ruby>
+                      {e.instructorName}
+                      <rt>{e.instructorNamePronunciation}</rt>
+                    </ruby>
+                  </td>
+                </tr>
+                <tr>
+                  <th>自宅住所</th>
+                  <td>{e.homeAddress}</td>
+                </tr>
+                <tr>
+                  <th>現職名</th>
+                  <td>{e.jobName}</td>
+                </tr>
+                <tr>
+                  <th>勤務先住所</th>
+                  <td>{e.officeAddress}</td>
+                </tr>
+                <tr>
+                  <th>担当授業</th>
+                  <td>
+                    {e.courseId}
+                    {e.courseName}
+                  </td>
+                </tr>
+                <tr>
+                  <th>実施学期</th>
+                  <td>{e.courseTerm}</td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+          <td>
+            <table class="inner">
+              <tbody>
+                <tr>
+                  <th>執行額</th>
+                  <td class="nowrap">{e.paidAmount}円</td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      {/each}
+    </tbody>
+  </table>
+{:else}
+  <p class="na">（該当なし）</p>
+{/if}
 <div class="total">
   <span>合計執行額</span>
   <span>{breakdown.paidAmountTotal}円</span>
@@ -393,5 +402,9 @@
       font-weight: bold;
       margin-right: 1em;
     }
+  }
+
+  p.na {
+    text-align: center;
   }
 </style>

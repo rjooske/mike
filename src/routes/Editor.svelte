@@ -8,31 +8,41 @@
   }: { data: MikeData; onBreakdown: () => void } = $props();
 </script>
 
-<label for="input-title">内訳表タイトル:</label>
-<input
-  id="input-title"
-  type="text"
-  bind:value={data.title}
-  style="width: 30em;"
-/>
-<br />
-
-<label for="input-wage">日当額:</label>
-<input
-  id="input-wage"
-  type="number"
-  value={data.wage}
-  onchange={(e) => {
-    const wage = parseNumber(e.currentTarget.value);
-    if (wage !== undefined) {
-      data.wage = wage;
-    }
-  }}
-/>
-<br />
-
-<button onclick={onBreakdown}>内訳表を作成</button>
-<br />
+<table class="input">
+  <tbody>
+    <tr>
+      <th><label for="input-title">内訳表タイトル</label></th>
+      <td>
+        <input
+          id="input-title"
+          type="text"
+          bind:value={data.title}
+          style="width: 30em;"
+        />
+      </td>
+    </tr>
+    <tr>
+      <th><label for="input-wage">日当額</label></th>
+      <td>
+        <input
+          id="input-wage"
+          type="number"
+          value={data.wage}
+          onchange={(e) => {
+            const wage = parseNumber(e.currentTarget.value);
+            if (wage !== undefined) {
+              data.wage = wage;
+            }
+          }}
+        />
+      </td>
+    </tr>
+    <tr>
+      <th></th>
+      <td><button onclick={onBreakdown}>内訳表を作成</button></td>
+    </tr>
+  </tbody>
+</table>
 
 <table class="outermost">
   <thead>
