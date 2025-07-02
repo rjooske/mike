@@ -80,11 +80,15 @@
   }
 
   type ErrorTextChunk = string | [string] | [string, string];
+  type FormattedError = { chunks: ErrorTextChunk[]; link: string };
 
-  function parseWorkbookErrorToChunks(e: ParseWorkbookError): ErrorTextChunk[] {
+  function formatParseWorkbookError(e: ParseWorkbookError): FormattedError {
     switch (e.kind) {
       case "mike-sheet-not-found":
-        return [`ミケが読み取るべきシートが存在しません`];
+        return {
+          chunks: [`ミケが読み取るべきシートが存在しません`],
+          link: "manual#error-mike-sheet-not-found",
+        };
       case "multiple-mike-start": {
         const chunks: ErrorTextChunk[] = [
           `ミケが読み取るべきシートが複数存在します（`,
@@ -96,14 +100,14 @@
           chunks.push([e.sheetNames[i]]);
         }
         chunks.push("）");
-        return chunks;
+        return { chunks, link: "manual#error-multiple-mike-start" };
       }
       default:
         unreachable(e);
     }
   }
 
-  function parseSheetErrorToChunks(e: ParseSheetError): ErrorTextChunk[] {
+  function formatParseSheetError(e: ParseSheetError): FormattedError {
     function count(want: number, got: number): string {
       if (got === 0) {
         return "ありません";
@@ -157,56 +161,83 @@
 
     switch (e.kind) {
       case "mike-end-not-found":
-        return [`mike_endセルが存在しません`];
+        return {
+          chunks: [`mike_endセルが存在しません`],
+          link: "manual#error-mike-end-not-found",
+        };
       case "mike-end-in-wrong-position":
-        return [
-          `mike_startセル（${position(e.mikeStart)}）と`,
-          `mike_endセル（${position(e.mikeEnd)}）が異なる列に存在します`,
-        ];
+        return {
+          chunks: [
+            `mike_startセル（${position(e.mikeStart)}）と`,
+            `mike_endセル（${position(e.mikeEnd)}）が異なる列に存在します`,
+          ],
+          link: "manual#error-mike-end-in-wrong-position",
+        };
       case "mike-end-misaligned":
-        return [
-          `mike_endセル（${colRow(e.mikeCol, e.mikeEndRow)}）の行が表の最終行と異なる可能性があります`,
-        ];
+        return {
+          chunks: [
+            `mike_endセル（${colRow(e.mikeCol, e.mikeEndRow)}）の行が表の最終行と異なる可能性があります`,
+          ],
+          link: "manual#error-mike-end-misaligned",
+        };
       case "bad-name-cell":
-        return [
-          [`氏名列`, "manual#name-col"],
-          `にデータが`,
-          count(3, e.entryCount),
-          range(e),
-        ];
+        return {
+          chunks: [
+            [`氏名列`, "manual#name-col"],
+            `にデータが`,
+            count(3, e.entryCount),
+            range(e),
+          ],
+          link: "manual#error-bad-name-cell",
+        };
       case "unmerged-job-name-cell":
-        return [
-          [`現職名列`, "manual#job-name-col"],
-          `に結合されていないセルが存在します`,
-          range(e),
-        ];
+        return {
+          chunks: [
+            [`現職名列`, "manual#job-name-col"],
+            `に結合されていないセルが存在します`,
+            range(e),
+          ],
+          link: "manual#error-unmerged-job-name-cell",
+        };
       case "bad-course-cell":
-        return [
-          [`担当科目列`, "manual#course-col"],
-          `にデータが`,
-          count(2, e.entryCount),
-          range(e),
-        ];
+        return {
+          chunks: [
+            [`担当科目列`, "manual#course-col"],
+            `にデータが`,
+            count(2, e.entryCount),
+            range(e),
+          ],
+          link: "manual#error-bad-course-cell",
+        };
       case "unmerged-total-duration-cell":
-        return [
-          [`総時間数列`, "manual#total-duration-col"],
-          `に結合されていないセルが存在します`,
-          range(e),
-        ];
+        return {
+          chunks: [
+            [`総時間数列`, "manual#total-duration-col"],
+            `に結合されていないセルが存在します`,
+            range(e),
+          ],
+          link: "manual#error-unmerged-total-duration-cell",
+        };
       case "unparsable-total-duration":
-        return [
-          [`総時間数列`, "manual#total-duration-col"],
-          `のデータ`,
-          [e.text],
-          `は数字ではありません`,
-          range(e),
-        ];
+        return {
+          chunks: [
+            [`総時間数列`, "manual#total-duration-col"],
+            `のデータ`,
+            [e.text],
+            `は数字ではありません`,
+            range(e),
+          ],
+          link: "manual#error-unparsable-total-duration",
+        };
       case "unmerged-course-term-cell":
-        return [
-          [`実施学期列`, "manual#course-term-col"],
-          `に結合されていないセルが存在します`,
-          range(e),
-        ];
+        return {
+          chunks: [
+            [`実施学期列`, "manual#course-term-col"],
+            `に結合されていないセルが存在します`,
+            range(e),
+          ],
+          link: "manual#error-unmerged-course-term-cell",
+        };
       default:
         unreachable(e);
     }
@@ -215,8 +246,8 @@
   type Display =
     | { kind: "nothing" }
     | { kind: "mike-data"; mikeData: MikeData }
-    | { kind: "error"; error: ErrorTextChunk[] }
-    | { kind: "sheet-errors"; sheetName: string; errors: ErrorTextChunk[][] };
+    | { kind: "error"; error: FormattedError }
+    | { kind: "sheet-errors"; sheetName: string; errors: FormattedError[] };
   const DISPLAY_NOTHING = { kind: "nothing" } as const satisfies Display;
 
   let display = $state<Display>(initialDisplay());
@@ -276,22 +307,31 @@
   function handleFileError(e: FileError) {
     switch (e.kind) {
       case "cannot-read-file":
-        display = { kind: "error", error: ["入力ファイルを読み込めません"] };
+        display = {
+          kind: "error",
+          error: {
+            chunks: ["入力ファイルを読み込めません"],
+            link: "manual#error-cannot-read-file",
+          },
+        };
         break;
       case "cannot-load-as-xlsx":
         display = {
           kind: "error",
-          error: ["入力ファイルをExcelファイルとして読み込めません"],
+          error: {
+            chunks: ["入力ファイルをExcelファイルとして読み込めません"],
+            link: "manual#error-cannot-load-as-xlsx",
+          },
         };
         break;
       case "workbook-error":
-        display = { kind: "error", error: parseWorkbookErrorToChunks(e.error) };
+        display = { kind: "error", error: formatParseWorkbookError(e.error) };
         break;
       case "sheet-errors":
         display = {
           kind: "sheet-errors",
           sheetName: e.sheetName,
-          errors: e.errors.map((e) => parseSheetErrorToChunks(e)),
+          errors: e.errors.map((e) => formatParseSheetError(e)),
         };
         break;
       default:
@@ -322,8 +362,8 @@
   }
 </script>
 
-{#snippet errorText(chunks: ErrorTextChunk[])}
-  {#each chunks as chunk}
+{#snippet errorText(e: FormattedError)}
+  {#each e.chunks as chunk}
     {#if typeof chunk === "string"}
       {chunk}
     {:else if chunk.length === 1}
@@ -332,6 +372,7 @@
       <a href={chunk[1]} target="_blank">{chunk[0]}</a>
     {/if}
   {/each}
+  <a class="error-detail" href={e.link} target="_blank">詳細</a>
 {/snippet}
 
 <nav>
@@ -394,6 +435,10 @@
 
     & > span {
       font-weight: bold;
+    }
+
+    & a.error-detail {
+      font-size: 0.8em;
     }
   }
 </style>
