@@ -9,3 +9,11 @@ body::after {
   display: block;
   height: 50vh;
 }
+
+code {
+  padding: 0.15em 0.3em;
+  margin: 0 0.2em;
+  background-color: #0001;
+  border: 1px solid #0002;
+  border-radius: 0.3em;
+}

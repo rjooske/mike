@@ -67,7 +67,7 @@
       position: absolute;
       top: 21px;
       left: 60px;
-      width: 208px;
+      width: 258px;
       height: 120px;
       display: grid;
       place-content: center;

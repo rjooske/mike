@@ -1,5 +1,6 @@
 <script lang="ts">
   import { browser } from "$app/environment";
+  import "$lib/common.scss";
   import type {
     ParseSheetError,
     ParseWorkbookError,
@@ -16,11 +17,11 @@
     type Instructor,
     type MikeData,
   } from "$lib/mike";
+  import "$lib/paw-print-trail.scss";
   import { unreachable, assert } from "$lib/util";
   import Editor from "./Editor.svelte";
   import FileInput, { type FileError, type Names } from "./FileInput.svelte";
   import MikeDialog from "./MikeDialog.svelte";
-  import "./global.scss";
 
   const TSUKUBA_STATION_ID = "ChIJNy1V02IMImARvSkyNbzdhzQ";
   const DAISAN_AREA_MAE_ID = "ChIJ-3Acq_8LImARmQg8O3hNzsM";
@@ -156,48 +157,45 @@
 
     switch (e.kind) {
       case "mike-end-not-found":
-        return [[`mike_end`], `セルが存在しません`];
+        return [`mike_endセルが存在しません`];
       case "mike-end-in-wrong-position":
         return [
-          [`mike_start`],
-          `セル（${position(e.mikeStart)}）と`,
-          [`mike_end`],
-          `セル（${position(e.mikeEnd)}）が異なる列に存在します`,
+          `mike_startセル（${position(e.mikeStart)}）と`,
+          `mike_endセル（${position(e.mikeEnd)}）が異なる列に存在します`,
         ];
       case "mike-end-misaligned":
         return [
-          [`mike_end`],
-          `セル（${colRow(e.mikeCol, e.mikeEndRow)}）の行が表の最終行と異なる可能性があります`,
+          `mike_endセル（${colRow(e.mikeCol, e.mikeEndRow)}）の行が表の最終行と異なる可能性があります`,
         ];
       case "bad-name-cell":
         return [
-          [`氏名列`, "example.com"], // TODO
+          [`氏名列`, "manual#name-col"],
           `にデータが`,
           count(3, e.entryCount),
           range(e),
         ];
       case "unmerged-job-name-cell":
         return [
-          [`現職名列`, "example.com"], // TODO
-          `にマージされていないセルが存在します`,
+          [`現職名列`, "manual#job-name-col"],
+          `に結合されていないセルが存在します`,
           range(e),
         ];
       case "bad-course-cell":
         return [
-          [`担当科目列`, "example.com"], // TODO
+          [`担当科目列`, "manual#course-col"],
           `にデータが`,
           count(2, e.entryCount),
           range(e),
         ];
       case "unmerged-total-duration-cell":
         return [
-          [`総時間数列`, "example.com"], // TODO
-          `にマージされていないセルが存在します`,
+          [`総時間数列`, "manual#total-duration-col"],
+          `に結合されていないセルが存在します`,
           range(e),
         ];
       case "unparsable-total-duration":
         return [
-          [`総時間数列`, "example.com"], // TODO
+          [`総時間数列`, "manual#total-duration-col"],
           `のデータ`,
           [e.text],
           `は数字ではありません`,
@@ -205,8 +203,8 @@
         ];
       case "unmerged-course-term-cell":
         return [
-          [`実施学期列`, "example.com"], // TODO
-          `にマージされていないセルが存在します`,
+          [`実施学期列`, "manual#course-term-col"],
+          `に結合されていないセルが存在します`,
           range(e),
         ];
       default:
@@ -336,6 +334,10 @@
   {/each}
 {/snippet}
 
+<nav>
+  <a href="manual" target="_blank">説明書</a>
+</nav>
+
 <MikeDialog text={mikeText} />
 
 <FileInput
@@ -379,6 +381,10 @@
 {/if}
 
 <style lang="scss">
+  nav {
+    margin-top: 2em;
+  }
+
   div.error {
     margin-top: 1em;
     padding: 1em 1.5em;
@@ -389,13 +395,5 @@
     & > span {
       font-weight: bold;
     }
-  }
-
-  code {
-    padding: 0.15em 0.3em;
-    margin: 0 0.2em;
-    background-color: #0001;
-    border: 1px solid #0002;
-    border-radius: 0.3em;
   }
 </style>

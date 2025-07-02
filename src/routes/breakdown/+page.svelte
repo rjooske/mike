@@ -125,7 +125,7 @@
 <h1>{mikeData.title}</h1>
 <div class="department">情報科学類</div>
 
-<h2 class="table-title">近郊地域に該当する教員</h2>
+<h2 class="table-title">近郊地域に該当する講師</h2>
 {#if breakdown.nearEntries.length > 0}
   <table class="outermost">
     <thead>
@@ -231,7 +231,7 @@
   <span>{breakdown.grandTotal}円</span>
 </div>
 
-<h2 class="table-title">支払い済みの教員</h2>
+<h2 class="table-title">支払い済みの講師</h2>
 {#if breakdown.paidEntries.length > 0}
   <table class="outermost">
     <thead>
