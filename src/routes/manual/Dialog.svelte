@@ -1,4 +1,5 @@
 <script lang="ts">
+  import "$lib/m-plus-rounded-1c.scss";
   import type { Snippet } from "svelte";
 
   let {
@@ -19,8 +20,6 @@
 </div>
 
 <style lang="scss">
-  @import url("https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c&display=swap");
-
   .root {
     margin: 0.5em 0;
     padding: 0.5em;

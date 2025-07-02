@@ -1,4 +1,6 @@
 <script lang="ts">
+  import "$lib/m-plus-rounded-1c.scss";
+
   let { text }: { text: string } = $props();
 </script>
 
@@ -19,6 +21,7 @@
     position: relative;
     height: 400px;
     margin-bottom: 2em;
+    font-family: "M PLUS Rounded 1c", sans-serif;
   }
 
   .mike {
